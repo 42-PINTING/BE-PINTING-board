@@ -30,4 +30,6 @@ public class BoardService {
       // 10개 선별
       return boardRepository.findAll();
    }
+
+   // TODO: 검색 기능 추가
 }
