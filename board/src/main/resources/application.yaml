@@ -1,1 +1,17 @@
-spring.application.name=board
+spring:
+  application:
+    name: board
+
+  datasource:
+    url: jdbc:postgresql://gateway_db:5430/${BOARD_DB_NAME}
+    username: ${BOARD_DB_USER}
+    password: ${BOARD_DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
