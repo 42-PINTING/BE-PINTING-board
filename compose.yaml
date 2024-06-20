@@ -1,0 +1,52 @@
+version: '3'
+
+services:
+
+  board_db:
+    container_name: board_db
+    image: postgres:16.3-alpine3.19
+    restart: always
+    environment:
+      POSTGRES_USER: ${BOARD_DB_USER}
+      PGUSER: ${BOARD_DB_USER}
+      POSTGRES_PASSWORD: ${BOARD_DB_PASSWORD}
+      POSTGRES_DB: ${BOARD_DB_NAME}
+      PGDATABASE: ${BOARD_DB_NAME}
+      PGPORT: ${BOARD_DB_PORT}
+    volumes:
+      - ./board/data:/var/lib/postgresql/data
+    ports:
+      - "${BOARD_DB_PORT}:${BOARD_DB_PORT}"
+    command: -p ${BOARD_DB_PORT}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready", "-d", "db_prod"]
+      interval: 10s
+      timeout: 30s
+      retries: 5
+    networks:
+      - pinting_net
+
+  board:
+    container_name: board
+    image: pinting/board:1.0.0
+    restart: always
+    build: 
+      context: ./board
+      args:
+        - BOARD_PORT=${BOARD_PORT}
+    pull_policy: never
+    env_file:
+      - ./env/.env
+#    expose:
+#      - ${BOARD_PORT}
+    ports:
+      - ${BOARD_PORT}:${BOARD_PORT}
+    depends_on:
+      board_db:
+        condition: service_healthy
+    networks:
+      - pinting_net
+
+networks:
+  pinting_net:
+    driver: bridge
