@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import pinting.board.controller.form.PostForm;
 import pinting.board.domain.Post;
 
 import java.util.List;
@@ -19,15 +20,17 @@ public class BoardServiceTest {
     @Test
     public void createPostTest() {
         //given
-        Post post = new Post();
-        post.setContent("content1");
-        post.setTitle("title2");
-        post.setImg("image3");
-        post.setAuthor_id(4242L);
+        PostForm postForm = new PostForm();
+        postForm.setImg("image_target1");
+        postForm.setTitle("title_target1");
+        postForm.setContent("content_target1");
+        postForm.setAuthorId(110001L);
+        postForm.setStatus("PUBLIC");
+        Post post = new Post(postForm);
 
         //when
         Long postId = boardService.createPost(post);
-        Post findPost = boardService.readOnePostById(postId).orElse(new Post());
+        Post findPost = boardService.readOnePostById(postId).get();
 
         //then
         System.out.println("findPost = " + findPost);
@@ -39,17 +42,22 @@ public class BoardServiceTest {
     @Test
     public void getMainPagePostTest() {
         //given
-        Post post1 = new Post();
-        post1.setContent("content1");
-        post1.setTitle("title2");
-        post1.setImg("image3");
-        post1.setAuthor_id(4242L);
+        Long authorId = 4242L;
+        PostForm postForm = new PostForm();
+        postForm.setImg("image_target1");
+        postForm.setTitle("title_target1");
+        postForm.setContent("content_target1");
+        postForm.setAuthorId(authorId);
+        postForm.setStatus("PUBLIC");
+        Post post1 = new Post(postForm);
 
-        Post post2 = new Post();
-        post2.setContent("content1");
-        post2.setTitle("title2");
-        post2.setImg("image3");
-        post2.setAuthor_id(4242L);
+        postForm.setImg("image_target2");
+        postForm.setTitle("title_target2");
+        postForm.setContent("content_target2");
+        postForm.setAuthorId(authorId);
+        postForm.setStatus("PUBLIC");
+        Post post2 = new Post(postForm);
+
 
         //when
         Long post1Id = boardService.createPost(post1);

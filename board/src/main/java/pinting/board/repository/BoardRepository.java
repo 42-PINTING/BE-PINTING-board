@@ -9,6 +9,7 @@ import java.util.Optional;
 
 public interface BoardRepository {
     void save(Post post);
+    void deleteById(Long id);
     Optional<Post> findOneById(Long id);
     Optional<Post> findOneByTitle(String title);
     List<Post> findByAuthor(Long author_id);

@@ -22,13 +22,28 @@ public class BoardService {
    }
 
    public Optional<Post> readOnePostById(Long id) {
-      return boardRepository.findOneById(id);
+      return Optional.ofNullable(boardRepository.findOneById(id).get());
    }
 
+   public void updatePost(Long post, PostUpdateDto dto) {
+
+   }
+
+   /**
+    * TODO: public, 검색 옵션 반영
+    */
    public List<Post> getMainPagePost() {
       List<Post> trimmed = boardRepository.findAll();
-      // 10개 선별
       return boardRepository.findAll();
+   }
+
+   public Long updatePost(Long id, Post post) {
+      boardRepository.save(post);
+      return id;
+   }
+
+   public void deletePost(Long id) {
+      boardRepository.deleteById(id);
    }
 
    // TODO: 검색 기능 추가

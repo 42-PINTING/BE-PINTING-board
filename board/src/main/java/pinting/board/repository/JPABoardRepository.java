@@ -23,6 +23,14 @@ public class JPABoardRepository implements BoardRepository {
     }
 
     @Override
+    public void deleteById(Long id) {
+        Post existing = em.find(Post.class, id);
+        if (existing != null) {
+            this.em.remove(this.em.contains(existing) ? existing : this.em.merge(existing));
+        }
+    }
+
+    @Override
     public Optional<Post> findOneById(Long id) {
         return Optional.ofNullable(em.find(Post.class, id));
     }
@@ -34,9 +42,9 @@ public class JPABoardRepository implements BoardRepository {
     }
 
     @Override
-    public List<Post> findByAuthor(Long author_id) {
-        return em.createQuery("select p from Post p where p.author_id = :author_id", Post.class)
-                .setParameter("author_id", author_id)
+    public List<Post> findByAuthor(Long authorId) {
+        return em.createQuery("select p from Post p where p.authorId = :authorId", Post.class)
+                .setParameter("authorId", authorId)
                 .getResultList();
     }
 
@@ -44,5 +52,6 @@ public class JPABoardRepository implements BoardRepository {
     public List<Post> findAll() {
         return em.createQuery("select p from Post p", Post.class).getResultList();
     }
+
 
 }

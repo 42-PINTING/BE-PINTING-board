@@ -3,7 +3,7 @@ spring:
     name: board
 
   datasource:
-    url: jdbc:postgresql://gateway_db:5430/${BOARD_DB_NAME}
+    url: jdbc:postgresql://board_db:${BOARD_DB_PORT}/${BOARD_DB_NAME}
     username: ${BOARD_DB_USER}
     password: ${BOARD_DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
@@ -15,3 +15,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+server:
+  port: 8082
