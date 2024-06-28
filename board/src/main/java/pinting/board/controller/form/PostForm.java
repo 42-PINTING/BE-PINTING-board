@@ -14,4 +14,16 @@ public class PostForm {
     private String content;
     private String status;
 //    private List<String> tags;
+
+    /**
+     * Constructor for Test
+     */
+    static long i = 0;
+    public PostForm() {
+        this.authorId = i++;
+        this.title = "title" + authorId;
+        this.img = "img" + authorId;
+        this.content = "content" + authorId;
+        this.status = "PUBLIC";
+    }
 }

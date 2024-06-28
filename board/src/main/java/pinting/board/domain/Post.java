@@ -3,7 +3,6 @@ package pinting.board.domain;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -17,7 +16,7 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 @Entity
 @Getter
-@ToString
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class Post {
 
     @Id
@@ -35,7 +34,6 @@ public class Post {
     @OneToMany(mappedBy = "post")
     private List<Tag> tags = new ArrayList<>();
 
-
     @Enumerated(EnumType.STRING)
     private PostStatus status; // [PUBLIC, PRIVATE]
 
@@ -46,7 +44,6 @@ public class Post {
     @CreatedDate
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH:mm:ss")
     private LocalDateTime updatedDate;
-    // 삭제 날짜 필요한가?
 
     public Post(PostForm form) {
         this.authorId = form.getAuthorId();
@@ -61,6 +58,13 @@ public class Post {
         this.likeCount = 0L;
     }
 
-    protected Post() {
+    @Override
+    public String toString() {
+        return "[id: " + id +
+                "authorId: " + authorId +
+                "title: " + title +
+                "img: " + img +
+                "content: " + content +
+                "likeCount: " + likeCount + "]";
     }
 }

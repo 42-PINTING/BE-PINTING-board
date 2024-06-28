@@ -1,5 +1,6 @@
 package pinting.board.repository;
 
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import lombok.RequiredArgsConstructor;
@@ -53,5 +54,8 @@ public class JPABoardRepository implements BoardRepository {
         return em.createQuery("select p from Post p", Post.class).getResultList();
     }
 
-
+    @Override
+    public List<Post> searchPosts(String keyword) {
+        return List.of();
+    }
 }

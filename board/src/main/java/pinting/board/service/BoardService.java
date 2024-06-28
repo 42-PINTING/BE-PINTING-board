@@ -47,4 +47,9 @@ public class BoardService {
    }
 
    // TODO: 검색 기능 추가
+   public List<Post> searchPost(String keyword) {
+      List<Post> results = boardRepository.searchPosts(keyword);
+
+      return results;
+   }
 }

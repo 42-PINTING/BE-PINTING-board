@@ -1,21 +1,30 @@
 package pinting.board.repository;
 
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import pinting.board.domain.Post;
 import pinting.board.domain.Tag;
 
 import java.util.List;
 import java.util.Optional;
 
+import static pinting.board.domain.QTag.tag;
+
 @Repository
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class JPATagRepository implements TagRepository {
 
     private final EntityManager em;
+    private final JPAQueryFactory queryFactory;
+
+    @Autowired
+    public JPATagRepository(EntityManager em) {
+        this.em = em;
+        this.queryFactory = new JPAQueryFactory(em);
+    }
 
     @Override
     @Transactional
@@ -38,16 +47,19 @@ public class JPATagRepository implements TagRepository {
     }
 
     @Override
-    public Optional<Tag> findOneByName(String name) {
-        return Optional.ofNullable(em.createQuery("select t from Tag t where t.name = :name", Tag.class)
-                .setParameter("name", name).getSingleResult());
+    public List<Tag> findAllByName(String name) {
+        return queryFactory
+                .selectFrom(tag)
+                .where(tag.name.eq(name))
+                .fetch();
     }
 
     @Override
-    public List<Tag> findOneByPostId(Long postId) {
-        return em.createQuery("select t from Tag as t where t.post.id = :post", Tag.class)
-                .setParameter("post", postId)
-                .getResultList();
+    public List<Tag> findAllByPostId(Long postId) {
+        return queryFactory
+                .selectFrom(tag)
+                .where(tag.post.id.eq(postId))
+                .fetch();
     }
 
     @Override

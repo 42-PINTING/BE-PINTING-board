@@ -14,4 +14,5 @@ public interface BoardRepository {
     Optional<Post> findOneByTitle(String title);
     List<Post> findByAuthor(Long author_id);
     List<Post> findAll();
+    List<Post> searchPosts(String keyword);
 }

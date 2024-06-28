@@ -10,7 +10,7 @@ public interface TagRepository {
     void save(Tag tag);
     void deleteById(Long id);
     Optional<Tag> findOneById(Long id);
-    Optional<Tag> findOneByName(String name);
-    List<Tag> findOneByPostId(Long postId);
+    List<Tag> findAllByName(String name);
+    List<Tag> findAllByPostId(Long postId);
     List<Tag> findAll();
 }
