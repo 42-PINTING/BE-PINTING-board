@@ -1,80 +1,112 @@
 package pinting.board.repository;
 
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.EntityManager;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Transactional;
 import pinting.board.controller.form.PostForm;
 import pinting.board.domain.Post;
+import pinting.board.domain.QTag;
 import pinting.board.domain.Tag;
 import pinting.board.service.BoardService;
 
+import javax.swing.text.html.parser.Entity;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static pinting.board.domain.QTag.tag;
+
 @SpringBootTest
+@Transactional
 class JPATagRepositoryTest {
 
     @Autowired
     JPATagRepository jpaTagRepository;
 
     @Autowired
+    EntityManager em;
+
+    @Autowired
     BoardService boardService;
 
-    @Test
-    public void 게시물_태그_삽입() {
-        Post post = createPost("image", "title", "content", 4242L);
-        boardService.createPost(post);
-        Tag tag = createTag("tag", post);
+    JPAQueryFactory queryFactory;
 
-        jpaTagRepository.save(tag);
+    @BeforeEach
+    public void before() {
+        queryFactory = new JPAQueryFactory(em);
 
-        List<Tag> findTag = jpaTagRepository.findOneByPostId(post.getId());
-        System.out.println("findTag.get(0).name = " + findTag.get(0).name);
-        Assertions.assertThat(findTag).hasSize(1);
+        PostForm form1 = new PostForm();
+        Post postA = new Post(form1);
+        PostForm form2 = new PostForm();
+        Post postB = new Post(form2);
+        PostForm form3 = new PostForm();
+        Post postC = new Post(form3);
+        PostForm form4 = new PostForm();
+        Post postD = new Post(form4);
+        em.persist(postA);
+        em.persist(postB);
+        em.persist(postC);
+        em.persist(postD);
+
+        Tag diary1 = new Tag("diary");
+        Tag diary2 = new Tag("diary");
+        Tag feeling1 = new Tag("feeling");
+        Tag feeling2 = new Tag("feeling");
+        em.persist(diary1);
+        em.persist(diary2);
+        em.persist(feeling1);
+        em.persist(feeling2);
+
+        diary1.changePost(postA);
+        diary2.changePost(postD);
+        feeling1.changePost(postC);
+        feeling2.changePost(postD);
     }
 
     @Test
-    public void 게시물_여러_태그_삽입() {
-        Post post = createPost("image", "title", "content", 4242L);
-        boardService.createPost(post);
+    public void 태그_생성() {
+        jpaTagRepository.save(new Tag("summer"));
+        jpaTagRepository.save(new Tag("winter"));
 
-        Tag summer = createTag("summer", post);
-        jpaTagRepository.save(summer);
+        Tag summer = queryFactory
+                .selectFrom(tag)
+                .where(tag.name.eq("summer"))
+                .fetchOne();
 
-        Tag spring = createTag("spring", post);
-        jpaTagRepository.save(spring);
+        Tag winter = queryFactory
+                .selectFrom(tag)
+                .where(tag.name.eq("winter"))
+                .fetchOne();
 
-        Tag fall = createTag("fall", post);
-        jpaTagRepository.save(fall);
 
-
-        List<Tag> findTag = jpaTagRepository.findOneByPostId(post.getId());
-        System.out.println("findTag.get(0).name = " + findTag.get(0).name);
-        System.out.println("findTag.get(1).name = " + findTag.get(1).name);
-        System.out.println("findTag.get(2).name = " + findTag.get(2).name);
-
-        Post findPost = boardService.readOnePostById(post.getId()).get();
-        Assertions.assertThat(findTag).hasSize(3);
-//        System.out.println(findPost.getTags());
+        assertThat(summer.getName()).isEqualTo("summer");
+        assertThat(winter.getName()).isEqualTo("winter");
     }
 
-    private static Tag createTag(String name, Post post) {
-        Tag tag = new Tag();
-        tag.setName(name);
-        tag.setPost(post);
-        return tag;
+    @Test
+    public void 태그_검색() {
+        List<Tag> results = jpaTagRepository.findAllByName("diary");
+
+        for (Tag tag : results) {
+            System.out.println("tag = " + tag);
+        }
+
+        assertThat(results).extracting("name").contains("diary");
     }
 
-    private static Post createPost(String image, String title, String content, long authorId) {
-        PostForm postForm = new PostForm();
-        postForm.setImg(image);
-        postForm.setTitle(title);
-        postForm.setContent(content);
-        postForm.setAuthorId(authorId);
-        postForm.setStatus("PUBLIC");
-        Post post = new Post(postForm);
-        return post;
+    @Test
+    public void 게시물_아이디_검색() {
+        List<Tag> results = jpaTagRepository.findAllByPostId(4L);
+
+        for (Tag tag : results) {
+            System.out.println("tag = " + tag);
+        }
+
+        assertThat(results.size()).isEqualTo(2);
     }
-
-
 }
