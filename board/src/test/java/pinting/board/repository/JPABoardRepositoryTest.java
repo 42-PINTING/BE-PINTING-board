@@ -1,7 +1,11 @@
 package pinting.board.repository;
 
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.EntityManager;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.reactive.context.AnnotationConfigReactiveWebApplicationContext;
 import org.springframework.context.ApplicationContext;
@@ -10,128 +14,162 @@ import org.springframework.transaction.annotation.Transactional;
 import pinting.board.config.AppConfig;
 import pinting.board.controller.form.PostForm;
 import pinting.board.domain.Post;
+import pinting.board.domain.QPost;
+import pinting.board.domain.Tag;
+import pinting.board.service.BoardService;
 
+import javax.swing.text.html.parser.Entity;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static pinting.board.domain.QPost.*;
 
 @Transactional
 @SpringBootTest(classes = AppConfig.class)
 public class JPABoardRepositoryTest {
 
-    @Test
-    public void saveTest() {
+    @Autowired
+    private EntityManager em;
 
-        ApplicationContext ac = new AnnotationConfigReactiveWebApplicationContext(AppConfig.class);
-        JPABoardRepository repository = ac.getBean(JPABoardRepository.class);
+    @Autowired
+    private BoardRepository boardRepository;
 
-        PostForm postForm = new PostForm();
-        postForm.setImg("image");
-        postForm.setTitle("title");
-        postForm.setContent("content");
-        postForm.setAuthorId(4242L);
-        postForm.setStatus("PUBLIC");
-        Post post = new Post(postForm);
+    @Autowired
+    private JPAQueryFactory queryFactory;
 
-        repository.save(post);
-        Post findPost = repository.findOneById(post.getId()).get();
-        Assertions.assertThat(post.getTitle()).isEqualTo(findPost.getTitle());
+    @BeforeEach
+    public void before() {
+        PostForm form1 = createForm(1L);
+        Post postA = new Post(form1);
+        PostForm form2 = createForm(2L);
+        Post postB = new Post(form2);
+        PostForm form3 = createForm(3L);
+        Post postC = new Post(form3);
+        PostForm form4 = createForm(4L);
+        Post postD = new Post(form4);
+        em.persist(postA);
+        em.persist(postB);
+        em.persist(postC);
+        em.persist(postD);
+
+        Tag diary1 = new Tag("diary");
+        Tag diary2 = new Tag("diary");
+        Tag feeling1 = new Tag("feeling");
+        Tag feeling2 = new Tag("feeling");
+        em.persist(diary1);
+        em.persist(diary2);
+        em.persist(feeling1);
+        em.persist(feeling2);
+
+        diary1.changePost(postA);
+        diary2.changePost(postD);
+        feeling1.changePost(postC);
+        feeling2.changePost(postD);
+    }
+
+    public PostForm createForm(Long id) {
+        return new PostForm(id, "title " + id, "img " + id, "content " + id, "PUBLIC", null);
+    }
+
+    public Post createPost(Long authorId, String title, String content) {
+        PostForm form = createForm(authorId);
+        form.setTitle(title);
+        form.setContent(content);
+        return new Post(form);
     }
 
     @Test
-    public void findByAllTest() {
+    public void 게시물_저장() {
+        PostForm form = createForm(42L);
+        boardRepository.save(new Post(form));
 
-        ApplicationContext ac = new AnnotationConfigReactiveWebApplicationContext(AppConfig.class);
-        JPABoardRepository repository = ac.getBean(JPABoardRepository.class);
+        Post findPost = queryFactory
+                .selectFrom(post)
+                .where(post.authorId.eq(42L))
+                .fetchOne();
 
-        PostForm postForm = new PostForm();
-        postForm.setImg("image_target1");
-        postForm.setTitle("title_target1");
-        postForm.setContent("content_target1");
-        postForm.setAuthorId(110001L);
-        postForm.setStatus("PUBLIC");
-        Post post1 = new Post(postForm);
+        assertThat(findPost).isNotNull();
+    }
 
-        postForm.setImg("image_target2");
-        postForm.setTitle("title_target2");
-        postForm.setContent("content_target2");
-        postForm.setAuthorId(110002L);
-        postForm.setStatus("PUBLIC");
-        Post post2 = new Post(postForm);
 
-        repository.save(post1);
-        repository.save(post2);
+    @Test
+    public void 게시물_삭제() {
+        boardRepository.deleteById(1L);
 
-        // When
-        List<Post> findPosts = repository.findAll();
+        Post findPost = em.find(Post.class, 1L);
 
-        // Then
-        Assertions.assertThat(findPosts.size()).isEqualTo(2);
+        assertThat(findPost).isNull();
     }
 
     @Test
-    public void findOneAuthorMultiplePostTest() {
+    public void ID로_조회() {
+        Post addPost = createPost(42L, "title", "content");
+        em.persist(addPost);
 
-        ApplicationContext ac = new AnnotationConfigReactiveWebApplicationContext(AppConfig.class);
-        JPABoardRepository repository = ac.getBean(JPABoardRepository.class);
+        Optional<Post> findPost = boardRepository.findOneById(addPost.getId());
 
-        Long authorId = 4242L;
-        PostForm postForm = new PostForm();
-        postForm.setImg("image_target1");
-        postForm.setTitle("title_target1");
-        postForm.setContent("content_target1");
-        postForm.setAuthorId(authorId);
-        postForm.setStatus("PUBLIC");
-        Post post1 = new Post(postForm);
-
-        postForm.setImg("image_target2");
-        postForm.setTitle("title_target2");
-        postForm.setContent("content_target2");
-        postForm.setAuthorId(authorId);
-        postForm.setStatus("PUBLIC");
-        Post post2 = new Post(postForm);
-
-        repository.save(post1);
-        repository.save(post2);
-
-        // When
-        List<Post> oneAuthorPosts = repository.findByAuthor(authorId);
-
-        // Then
-        Assertions.assertThat(post1.getTitle()).isEqualTo(oneAuthorPosts.get(0).getTitle());
-        Assertions.assertThat(post2.getTitle()).isEqualTo(oneAuthorPosts.get(1).getTitle());
-        Assertions.assertThat(oneAuthorPosts.size()).isEqualTo(2);
+        System.out.println("findPost = " + findPost);
+        assertThat(findPost).isPresent();
     }
 
     @Test
-    void findByTitleTest() {
-        ApplicationContext ac = new AnnotationConfigReactiveWebApplicationContext(AppConfig.class);
-        JPABoardRepository repository = ac.getBean(JPABoardRepository.class);
+    public void 작가_게시물_조회() {
+        Post post1 = createPost(42L, "42's title 1", "42's content 1");
+        Post post2 = createPost(42L, "42's title 2", "42's content 2");
+        Post post3 = createPost(42L, "42's title 3", "42's content 3");
+        em.persist(post1);
+        em.persist(post2);
+        em.persist(post3);
 
-        Long authorId = 4242L;
-        PostForm postForm = new PostForm();
-        postForm.setImg("image_target1");
-        postForm.setTitle("title_target1");
-        postForm.setContent("content_target1");
-        postForm.setAuthorId(authorId);
-        postForm.setStatus("PUBLIC");
-        Post post1 = new Post(postForm);
+        List<Post> results = boardRepository.findByAuthor(42L);
 
-        postForm.setImg("image_target2");
-        postForm.setTitle("title_target2");
-        postForm.setContent("content_target2");
-        postForm.setAuthorId(authorId);
-        postForm.setStatus("PUBLIC");
-        Post post2 = new Post(postForm);
+        assertThat(results.size()).isEqualTo(3);
+        assertThat(results.get(0).getTitle()).isEqualTo("42's title 1");
+    }
 
-        repository.save(post1);
-        repository.save(post2);
-        // When
-        Post foundPost1 = repository.findOneByTitle(post1.getTitle()).get();
-        Post foundPost2 = repository.findOneByTitle(post2.getTitle()).get();
+    @Test
+    public void 존재하지_않는_키워드로_검색() {
+        List<Post> results = boardRepository.searchPostsByKeyword("없음");
 
-        // Then
-        org.junit.jupiter.api.Assertions.assertThrows(EmptyResultDataAccessException.class,
-                () -> repository.findOneByTitle("title"));
-        Assertions.assertThat(post1.getTitle()).isEqualTo(foundPost1.getTitle());
-        Assertions.assertThat(post2.getTitle()).isEqualTo(foundPost2.getTitle());
+        assertThat(results.size()).isEqualTo(0);
+    }
+
+    @Test
+    public void 존재하는_키워드로_검색() {
+        List<Post> results = boardRepository.searchPostsByKeyword("title");
+
+        assertThat(results.size()).isEqualTo(4);
+    }
+
+    @Test
+    public void 태그_검색() {
+        List<String> tags = new ArrayList<>();
+        tags.add("diary");
+        List<Post> results = boardRepository.searchPostsByTags(tags);
+
+        assertThat(results.size()).isEqualTo(2);
+    }
+
+    @Test
+    public void 빈_태그로_검색() {
+        List<String> tags = new ArrayList<>();
+        List<Post> results = boardRepository.searchPostsByTags(tags);
+
+        assertThat(results.size()).isEqualTo(0);
+    }
+
+    @Test
+    public void 없는_태그_검색() {
+        List<String> tags = new ArrayList<>();
+        tags.add("does not exist");
+        List<Post> results = boardRepository.searchPostsByTags(tags);
+
+        for (Post result : results) {
+            System.out.println("result = " + result);
+        }
+
+        assertThat(results.size()).isEqualTo(0);
     }
 }
