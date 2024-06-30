@@ -8,6 +8,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.format.annotation.DateTimeFormat;
 import pinting.board.controller.form.PostForm;
+import pinting.board.service.PostUpdateDto;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -58,13 +59,37 @@ public class Post {
         this.likeCount = 0L;
     }
 
+    public Post(Long authorId, String title, String img, String content, List<Tag> tags, PostStatus status) {
+        this.authorId = authorId;
+        this.title = title;
+        this.img = img;
+        this.content = content;
+        this.tags = tags;
+        this.status = status;
+    }
+
     @Override
     public String toString() {
         return "[id: " + id +
-                "authorId: " + authorId +
-                "title: " + title +
-                "img: " + img +
-                "content: " + content +
-                "likeCount: " + likeCount + "]";
+                ", authorId: " + authorId +
+                ", title: " + title +
+                ", img: " + img +
+                ", content: " + content +
+                ", likeCount: " + likeCount + "]";
     }
+
+    public void update(PostUpdateDto postUpdateDto) {
+        this.title = postUpdateDto.getTitle();
+        this.img = postUpdateDto.getImg();
+        this.content = postUpdateDto.getContent();
+        setTags(postUpdateDto.getTags());
+    }
+
+    private void setTags(List<String> tags) {
+        this.tags.clear();
+        for (String tag : tags) {
+            this.tags.add(new Tag(tag));
+        }
+    }
+
 }

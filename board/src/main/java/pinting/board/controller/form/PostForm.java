@@ -13,17 +13,14 @@ public class PostForm {
     private String img;
     private String content;
     private String status;
-//    private List<String> tags;
+    private List<String> tags;
 
-    /**
-     * Constructor for Test
-     */
-    static long i = 0;
-    public PostForm() {
-        this.authorId = i++;
-        this.title = "title" + authorId;
-        this.img = "img" + authorId;
-        this.content = "content" + authorId;
-        this.status = "PUBLIC";
+    public PostForm(Long authorId, String title, String img, String content, String status, List<String> tags) {
+        this.authorId = authorId;
+        this.title = title;
+        this.img = img;
+        this.content = content;
+        this.status = status;
+        this.tags = tags;
     }
 }
