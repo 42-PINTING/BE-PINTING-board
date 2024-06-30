@@ -4,12 +4,19 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import pinting.board.domain.Post;
+import pinting.board.domain.QPost;
+import pinting.board.domain.QTag;
+import pinting.board.domain.Tag;
 
 import java.util.List;
 import java.util.Optional;
+
+import static pinting.board.domain.QPost.post;
+import static pinting.board.domain.QTag.tag;
 
 @Repository
 @RequiredArgsConstructor
@@ -17,6 +24,7 @@ import java.util.Optional;
 public class JPABoardRepository implements BoardRepository {
 
     private final EntityManager em;
+    private final JPAQueryFactory queryFactory;
 
     @Override
     public void save(Post post) {
@@ -37,25 +45,34 @@ public class JPABoardRepository implements BoardRepository {
     }
 
     @Override
-    public Optional<Post> findOneByTitle(String title) {
-        return Optional.ofNullable(em.createQuery("select p from Post p where p.title = :title", Post.class)
-                .setParameter("title", title).getSingleResult());
-    }
-
-    @Override
     public List<Post> findByAuthor(Long authorId) {
-        return em.createQuery("select p from Post p where p.authorId = :authorId", Post.class)
-                .setParameter("authorId", authorId)
-                .getResultList();
+        return queryFactory
+                        .selectFrom(post)
+                        .where(post.authorId.eq(authorId))
+                        .fetch();
     }
 
     @Override
     public List<Post> findAll() {
-        return em.createQuery("select p from Post p", Post.class).getResultList();
+        return queryFactory
+                .selectFrom(post)
+                .fetch();
     }
 
     @Override
-    public List<Post> searchPosts(String keyword) {
-        return List.of();
+    public List<Post> searchPostsByKeyword(String keyword) {
+        return queryFactory
+                .selectFrom(post)
+                .where(post.title.contains(keyword))
+                .fetch();
+    }
+
+    @Override
+    public List<Post> searchPostsByTags(List<String> tagNames) {
+        return queryFactory
+                .selectFrom(post)
+                .join(post.tags, tag)
+                .where(tag.name.in(tagNames))
+                .fetch();
     }
 }
