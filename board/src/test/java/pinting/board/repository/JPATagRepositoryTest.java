@@ -17,6 +17,7 @@ import pinting.board.service.BoardService;
 
 import javax.swing.text.html.parser.Entity;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static pinting.board.domain.QTag.tag;
@@ -26,7 +27,7 @@ import static pinting.board.domain.QTag.tag;
 class JPATagRepositoryTest {
 
     @Autowired
-    JPATagRepository jpaTagRepository;
+    TagRepository tagRepository;
 
     @Autowired
     EntityManager em;
@@ -34,19 +35,18 @@ class JPATagRepositoryTest {
     @Autowired
     BoardService boardService;
 
+    @Autowired
     JPAQueryFactory queryFactory;
 
     @BeforeEach
     public void before() {
-        queryFactory = new JPAQueryFactory(em);
-
-        PostForm form1 = new PostForm();
+        PostForm form1 = createForm(1L);
         Post postA = new Post(form1);
-        PostForm form2 = new PostForm();
+        PostForm form2 = createForm(2L);
         Post postB = new Post(form2);
-        PostForm form3 = new PostForm();
+        PostForm form3 = createForm(3L);
         Post postC = new Post(form3);
-        PostForm form4 = new PostForm();
+        PostForm form4 = createForm(4L);
         Post postD = new Post(form4);
         em.persist(postA);
         em.persist(postB);
@@ -68,10 +68,14 @@ class JPATagRepositoryTest {
         feeling2.changePost(postD);
     }
 
+    public PostForm createForm(Long id) {
+        return new PostForm(id, "title " + id, "img " + id, "content " + id, "PUBLIC", null);
+    }
+
     @Test
     public void 태그_생성() {
-        jpaTagRepository.save(new Tag("summer"));
-        jpaTagRepository.save(new Tag("winter"));
+        tagRepository.save(new Tag("summer"));
+        tagRepository.save(new Tag("winter"));
 
         Tag summer = queryFactory
                 .selectFrom(tag)
@@ -89,8 +93,17 @@ class JPATagRepositoryTest {
     }
 
     @Test
-    public void 태그_검색() {
-        List<Tag> results = jpaTagRepository.findAllByName("diary");
+    public void 태그_삭제() {
+        tagRepository.deleteById(1L);
+
+        Optional<Tag> findTag = tagRepository.findOneById(1L);
+
+        assertThat(findTag.isEmpty()).isTrue();
+    }
+
+    @Test
+    public void 태그_이름_검색() {
+        List<Tag> results = tagRepository.findAllByName("diary");
 
         for (Tag tag : results) {
             System.out.println("tag = " + tag);
@@ -101,7 +114,7 @@ class JPATagRepositoryTest {
 
     @Test
     public void 게시물_아이디_검색() {
-        List<Tag> results = jpaTagRepository.findAllByPostId(4L);
+        List<Tag> results = tagRepository.findAllByPostId(4L);
 
         for (Tag tag : results) {
             System.out.println("tag = " + tag);
@@ -109,4 +122,5 @@ class JPATagRepositoryTest {
 
         assertThat(results.size()).isEqualTo(2);
     }
+
 }
