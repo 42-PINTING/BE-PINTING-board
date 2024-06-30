@@ -14,17 +14,12 @@ import java.util.Optional;
 import static pinting.board.domain.QTag.tag;
 
 @Repository
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class JPATagRepository implements TagRepository {
 
     private final EntityManager em;
     private final JPAQueryFactory queryFactory;
-
-    @Autowired
-    public JPATagRepository(EntityManager em) {
-        this.em = em;
-        this.queryFactory = new JPAQueryFactory(em);
-    }
 
     @Override
     @Transactional
@@ -64,7 +59,9 @@ public class JPATagRepository implements TagRepository {
 
     @Override
     public List<Tag> findAll() {
-        return em.createQuery("select t from Tag t", Tag.class).getResultList();
+        return queryFactory
+                .selectFrom(tag)
+                .fetch();
     }
 
 }
