@@ -1,5 +1,7 @@
 package pinting.board.repository;
 
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
@@ -73,6 +75,15 @@ public class JPABoardRepository implements BoardRepository {
                 .selectFrom(post)
                 .join(post.tags, tag)
                 .where(tag.name.in(tagNames))
+                .fetch();
+    }
+
+    @Override
+    public List<Post> getRandomPosts(int count) {
+        return queryFactory
+                .selectFrom(post)
+                .orderBy(NumberExpression.random().asc())
+                .limit(count)
                 .fetch();
     }
 }
