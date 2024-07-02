@@ -30,7 +30,7 @@ public class Post {
     private String img;
     private String content;
     private Long likeCount;
-    private int hiddenTime;
+    private LocalDateTime hiddenTime;
 
     @OneToMany(mappedBy = "post")
     private List<Tag> tags = new ArrayList<>();
@@ -82,6 +82,7 @@ public class Post {
         this.title = postUpdateDto.getTitle();
         this.img = postUpdateDto.getImg();
         this.content = postUpdateDto.getContent();
+        this.updatedDate = LocalDateTime.now();
         setTags(postUpdateDto.getTags());
     }
 
@@ -92,4 +93,38 @@ public class Post {
         }
     }
 
+    /**
+     * like 증가
+     */
+    public Long increaseLikeCount() {
+        this.likeCount++;
+        return this.likeCount;
+    }
+
+    /**
+     * like 감소
+     */
+    public Long decreaseLikeCount() {
+        this.likeCount--;
+        return this.likeCount;
+    }
+
+    /**
+     * post 가리기
+     */
+    public void hiddenPost() {
+        this.updatedDate = LocalDateTime.now();
+        // TODO: hidden time 과 status 둘 중 하나만 사용해야 함.
+        this.hiddenTime = LocalDateTime.now();
+        this.status = PostStatus.PRIVATE;
+    }
+
+    /**
+     * post 공개하기
+     */
+    public void publishPost() {
+        this.updatedDate = LocalDateTime.now();
+        this.hiddenTime = null;
+        this.status = PostStatus.PUBLIC;
+    }
 }
