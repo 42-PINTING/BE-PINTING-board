@@ -14,6 +14,7 @@ public interface BoardRepository {
     Optional<Post> findOneById(Long id);
     List<Post> findByAuthor(Long author_id);
     List<Post> findAll();
+    List<Post> getRandomPosts(int n);
     List<Post> searchPostsByKeyword(String keyword);
     List<Post> searchPostsByTags(List<String> tags);
 }
