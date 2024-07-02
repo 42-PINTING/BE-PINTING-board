@@ -172,4 +172,17 @@ public class JPABoardRepositoryTest {
 
         assertThat(results.size()).isEqualTo(0);
     }
+
+    @Test
+    public void 랜덤_게시물_조회() {
+        for (long i = 0; i <= 100; i++) {
+            em.persist(createPost(i, "title " + i, "content " + i));
+        }
+
+        List<Post> results = boardRepository.getRandomPosts(9);
+        for (Post result : results) {
+            System.out.println("result = " + result);
+        }
+        assertThat(results.size()).isEqualTo(9);
+    }
 }
