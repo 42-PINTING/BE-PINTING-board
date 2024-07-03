@@ -57,6 +57,9 @@ public class Post {
             this.status = PostStatus.PRIVATE;
         }
         this.likeCount = 0L;
+        for (String tagName : form.getTags()) {
+            new Tag(tagName).changePost(this);
+        }
     }
 
     public Post(Long authorId, String title, String img, String content, List<Tag> tags, PostStatus status) {

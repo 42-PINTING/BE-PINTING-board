@@ -62,7 +62,7 @@ public class JPABoardRepository implements BoardRepository {
     }
 
     @Override
-    public List<Post> searchPostsByKeyword(String keyword) {
+    public List<Post> findPostsByKeyword(String keyword) {
         return queryFactory
                 .selectFrom(post)
                 .where(post.title.contains(keyword))
@@ -70,7 +70,7 @@ public class JPABoardRepository implements BoardRepository {
     }
 
     @Override
-    public List<Post> searchPostsByTags(List<String> tagNames) {
+    public List<Post> findPostsByTags(List<String> tagNames) {
         return queryFactory
                 .selectFrom(post)
                 .join(post.tags, tag)

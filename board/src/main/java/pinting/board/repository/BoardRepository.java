@@ -1,9 +1,6 @@
 package pinting.board.repository;
 
-import jakarta.persistence.EntityManager;
-import org.springframework.stereotype.Repository;
 import pinting.board.domain.Post;
-import pinting.board.domain.Tag;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,6 +12,6 @@ public interface BoardRepository {
     List<Post> findByAuthor(Long author_id);
     List<Post> findAll();
     List<Post> getRandomPosts(int n);
-    List<Post> searchPostsByKeyword(String keyword);
-    List<Post> searchPostsByTags(List<String> tags);
+    List<Post> findPostsByKeyword(String keyword);
+    List<Post> findPostsByTags(List<String> tags);
 }
