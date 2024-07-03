@@ -2,23 +2,16 @@ package pinting.board.repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.web.reactive.context.AnnotationConfigReactiveWebApplicationContext;
-import org.springframework.context.ApplicationContext;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.transaction.annotation.Transactional;
 import pinting.board.config.AppConfig;
 import pinting.board.controller.form.PostForm;
 import pinting.board.domain.Post;
-import pinting.board.domain.QPost;
 import pinting.board.domain.Tag;
-import pinting.board.service.BoardService;
 
-import javax.swing.text.html.parser.Entity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -131,14 +124,14 @@ public class JPABoardRepositoryTest {
 
     @Test
     public void 존재하지_않는_키워드로_검색() {
-        List<Post> results = boardRepository.searchPostsByKeyword("없음");
+        List<Post> results = boardRepository.findPostsByKeyword("없음");
 
         assertThat(results.size()).isEqualTo(0);
     }
 
     @Test
     public void 존재하는_키워드로_검색() {
-        List<Post> results = boardRepository.searchPostsByKeyword("title");
+        List<Post> results = boardRepository.findPostsByKeyword("title");
 
         assertThat(results.size()).isEqualTo(4);
     }
@@ -147,7 +140,7 @@ public class JPABoardRepositoryTest {
     public void 태그_검색() {
         List<String> tags = new ArrayList<>();
         tags.add("diary");
-        List<Post> results = boardRepository.searchPostsByTags(tags);
+        List<Post> results = boardRepository.findPostsByTags(tags);
 
         assertThat(results.size()).isEqualTo(2);
     }
@@ -155,7 +148,7 @@ public class JPABoardRepositoryTest {
     @Test
     public void 빈_태그로_검색() {
         List<String> tags = new ArrayList<>();
-        List<Post> results = boardRepository.searchPostsByTags(tags);
+        List<Post> results = boardRepository.findPostsByTags(tags);
 
         assertThat(results.size()).isEqualTo(0);
     }
@@ -164,7 +157,7 @@ public class JPABoardRepositoryTest {
     public void 없는_태그_검색() {
         List<String> tags = new ArrayList<>();
         tags.add("does not exist");
-        List<Post> results = boardRepository.searchPostsByTags(tags);
+        List<Post> results = boardRepository.findPostsByTags(tags);
 
         for (Post result : results) {
             System.out.println("result = " + result);
