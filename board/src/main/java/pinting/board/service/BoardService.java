@@ -37,6 +37,23 @@ public class BoardService {
       if (findPost.isEmpty()) {
          return Optional.empty();
       }
+      /**
+       * 기존의 태그 리스트를 업데이트 하려는 태그 이름으로 검색하여 없는 것은 추가, 있는 것은 패스,
+       * 업데이트 하려는 태그 리스트를 기존의 태그 리스트로 검색하여 없는 것은 삭제, 있는 것은 패스
+       * 비효율적으로 보이기 때문에, 리팩토링을 해야 한다. issue number: #4
+       */
+      List<Tag> originTags = tagRepository.findAllByPostId(postId);
+      for (Tag originTag : originTags) {
+         if (!dto.getTags().contains(originTag.name)) {
+            tagRepository.deleteById(originTag.getId());
+         }
+      }
+      for (String updateTagName : dto.getTags()) {
+         if (!originTags.stream().map(Tag::getName).toList().contains(updateTagName)) {
+            Tag updateTag = new Tag(updateTagName, findPost.get());
+            tagRepository.save(updateTag);
+         }
+      }
       findPost.get().update(dto);
       return findPost;
    }

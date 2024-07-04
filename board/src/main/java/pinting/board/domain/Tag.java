@@ -16,14 +16,15 @@ public class Tag {
 
     public String name;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id")
-    public Post post;
-
-    public void changePost(Post post) {
+    public Tag(String name, Post post) {
+        this.name = name;
         this.post = post;
         post.getTags().add(this);
     }
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id")
+    public Post post;
 
     public Tag(String name) {
         this.name = name;

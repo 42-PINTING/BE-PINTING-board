@@ -58,7 +58,7 @@ public class Post {
         }
         this.likeCount = 0L;
         for (String tagName : form.getTags()) {
-            new Tag(tagName).changePost(this);
+            new Tag(tagName, this);
         }
     }
 
@@ -86,14 +86,6 @@ public class Post {
         this.img = postUpdateDto.getImg();
         this.content = postUpdateDto.getContent();
         this.updatedDate = LocalDateTime.now();
-        setTags(postUpdateDto.getTags());
-    }
-
-    private void setTags(List<String> tags) {
-        this.tags.clear();
-        for (String tag : tags) {
-            this.tags.add(new Tag(tag));
-        }
     }
 
     /**
@@ -117,7 +109,6 @@ public class Post {
      */
     public void hiddenPost() {
         this.updatedDate = LocalDateTime.now();
-        // TODO: hidden time 과 status 둘 중 하나만 사용해야 함.
         this.hiddenTime = LocalDateTime.now();
         this.status = PostStatus.PRIVATE;
     }
