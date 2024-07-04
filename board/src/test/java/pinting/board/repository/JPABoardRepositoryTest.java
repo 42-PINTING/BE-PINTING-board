@@ -47,19 +47,15 @@ public class JPABoardRepositoryTest {
         em.persist(postC);
         em.persist(postD);
 
-        Tag diary1 = new Tag("diary");
-        Tag diary2 = new Tag("diary");
-        Tag feeling1 = new Tag("feeling");
-        Tag feeling2 = new Tag("feeling");
+        Tag diary1 = new Tag("diary", postA);
+        Tag diary2 = new Tag("diary", postD);
+        Tag feeling1 = new Tag("feeling", postC);
+        Tag feeling2 = new Tag("feeling", postD);
         em.persist(diary1);
         em.persist(diary2);
         em.persist(feeling1);
         em.persist(feeling2);
 
-        diary1.changePost(postA);
-        diary2.changePost(postD);
-        feeling1.changePost(postC);
-        feeling2.changePost(postD);
     }
 
     public PostForm createForm(Long id) {

@@ -281,4 +281,9 @@ public class BoardServiceTest {
         findPost = boardService.readOnePostById(saveId1);
         assertThat(findPost.get().getStatus()).isEqualTo(PostStatus.PUBLIC);
     }
+
+    @Test
+    void 랜덤_게시물() {
+        
+    }
 }
