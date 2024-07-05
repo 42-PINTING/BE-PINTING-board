@@ -5,6 +5,7 @@ import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Description;
 import org.springframework.transaction.annotation.Transactional;
 import pinting.board.controller.form.PostForm;
 import pinting.board.domain.Post;
@@ -109,6 +110,26 @@ public class BoardServiceTest {
 
         Post findPost = em.find(Post.class, saveId);
         assertThat(findPost.getTitle()).isEqualTo("update");
+    }
+
+    @Test
+    public void 포스트_중복_태그_업데이트() {
+        List<String> tag1 = createTags("test1", "test2");
+        Long saveId = boardService.createPost(createSamplePost(1L, tag1));
+
+        em.flush();
+        em.clear();
+
+        List<String> tag2 = createTags("duplicated", "duplicated", "duplicated", "duplicated");
+
+        PostUpdateDto updateDto = new PostUpdateDto("update", "update", "update", tag2);
+        boardService.updatePost(saveId, updateDto);
+
+        em.flush();
+        em.clear();
+
+        Post findPost = em.find(Post.class, saveId);
+        assertThat(findPost.getTags().size()).isEqualTo(1);
     }
 
     @Test
@@ -218,35 +239,160 @@ public class BoardServiceTest {
         List<Post> results = boardService.searchPostByAuthor(1L);
         assertThat(results.size()).isEqualTo(3);
     }
-//
-//    @Test
-//    void 좋아요_한_번() {
-//        List<String> tag1 = createTags();
-//        Long saveId1 = boardService.createPost(createSamplePost(1L, tag1));
-//
-//        boardService.likePost(saveId1);
-//
-//        em.flush();
-//        em.clear();
-//
-//        Optional<Post> findPost = boardService.readOnePostById(saveId1);
-//        assertThat(findPost.get().getLikeCount()).isEqualTo(1);
-//    }
-//
-//    @Test
-//    void 좋아요_여러_번() {
-//        List<String> tag1 = createTags();
-//        Long saveId1 = boardService.createPost(createSamplePost(1L, tag1));
-//        for (int i = 0; i < 42; i++) {
-//            boardService.likePost(saveId1);
-//        }
-//
-//        em.flush();
-//        em.clear();
-//
-//        Optional<Post> findPost = boardService.readOnePostById(saveId1);
-//    }
-    
+
+    @Test
+    void 좋아요_한_번() {
+        List<String> tag1 = createTags();
+        Post targetPost = createSamplePost(1L, tag1);
+        Long savePostId1 = boardService.createPost(targetPost);
+        boardService.likePost(1L, savePostId1);
+
+        em.flush();
+        em.clear();
+
+        List<Long> postLikeMembers = boardService.getPostLikeMembers(savePostId1);
+        assertThat(postLikeMembers.size()).isEqualTo(1);
+        int likeCount = boardService.getPostLikesCount(savePostId1);
+        assertThat(likeCount).isEqualTo(1);
+    }
+
+    @Test
+    void 없는_게시물에_좋아요() {
+        boolean result = boardService.likePost(1L, 4242L);
+
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    void 좋아요_여러_번() {
+        List<String> tag1 = createTags();
+        Post targetPost = createSamplePost(1L, tag1);
+        Long savePostId1 = boardService.createPost(targetPost);
+        for (long i = 0; i < 42; i++) {
+            boardService.likePost(i, savePostId1);
+        }
+
+        List<Long> postLikeMembers = boardService.getPostLikeMembers(savePostId1);
+        assertThat(postLikeMembers.size()).isEqualTo(42);
+    }
+
+    @Test
+    void 같은_멤버의_여러_번_좋아요() {
+        List<String> tag1 = createTags();
+        Post targetPost = createSamplePost(1L, tag1);
+        Long savePostId1 = boardService.createPost(targetPost);
+        for (long i = 0; i < 42; i++) {
+            boardService.likePost(1L, savePostId1);
+        }
+
+        em.flush();
+        em.clear();
+
+        List<Long> postLikeMembers = boardService.getPostLikeMembers(savePostId1);
+        assertThat(postLikeMembers.size()).isEqualTo(1);
+    }
+
+    @Test
+    void 좋아요_취소() {
+        List<String> tag1 = createTags();
+        Post targetPost = createSamplePost(1L, tag1);
+        Long savePostId1 = boardService.createPost(targetPost);
+        boardService.likePost(1L, savePostId1);
+
+        em.flush();
+        em.clear();
+
+        List<Long> postLikeMembers = boardService.getPostLikeMembers(savePostId1);
+        assertThat(postLikeMembers.size()).isEqualTo(1);
+        int likeCount = boardService.getPostLikesCount(savePostId1);
+        assertThat(likeCount).isEqualTo(1);
+
+        for (long i = 0; i < 42; i++) {
+            boardService.cancelLike(1L, savePostId1);
+        }
+
+        em.flush();
+        em.clear();
+
+        postLikeMembers = boardService.getPostLikeMembers(savePostId1);
+        assertThat(postLikeMembers.size()).isEqualTo(0);
+        likeCount = boardService.getPostLikesCount(savePostId1);
+        assertThat(likeCount).isEqualTo(0);
+    }
+
+    @Test
+    void 존재하지_않는_게시물에_좋아요_취소() {
+
+        boolean result = boardService.cancelLike(1L, 4242L);
+
+        em.flush();
+        em.clear();
+
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    void 같은_멤버의_여러_번_좋아요_취소() {
+        List<String> tag1 = createTags();
+        Post targetPost = createSamplePost(1L, tag1);
+        Long savePostId1 = boardService.createPost(targetPost);
+        boardService.likePost(1L, savePostId1);
+
+        em.flush();
+        em.clear();
+
+        List<Long> postLikeMembers = boardService.getPostLikeMembers(savePostId1);
+        assertThat(postLikeMembers.size()).isEqualTo(1);
+        int likeCount = boardService.getPostLikesCount(savePostId1);
+        assertThat(likeCount).isEqualTo(1);
+
+        boardService.cancelLike(1L, savePostId1);
+
+        em.flush();
+        em.clear();
+
+        postLikeMembers = boardService.getPostLikeMembers(savePostId1);
+        assertThat(postLikeMembers.size()).isEqualTo(0);
+        likeCount = boardService.getPostLikesCount(savePostId1);
+        assertThat(likeCount).isEqualTo(0);
+    }
+
+    @Test
+    void 좋아요_개수_조회_0() {
+        List<String> tag1 = createTags();
+        Post targetPost = createSamplePost(1L, tag1);
+        Long savePostId1 = boardService.createPost(targetPost);
+
+        int likeCount = boardService.getPostLikesCount(savePostId1);
+        assertThat(likeCount).isEqualTo(0);
+    }
+
+    @Test
+    void 좋아요_개수_조회_n() {
+        List<String> tag1 = createTags();
+        Post targetPost = createSamplePost(1L, tag1);
+        Long savePostId1 = boardService.createPost(targetPost);
+        for (long i = 0; i < 42; i++) {
+            boardService.likePost(i, savePostId1);
+        }
+
+        int likeCount = boardService.getPostLikesCount(savePostId1);
+        assertThat(likeCount).isEqualTo(42);
+    }
+
+    @Test
+    void 좋아요_한_멤버ID_조회() {
+        List<String> tag1 = createTags();
+        Post targetPost = createSamplePost(1L, tag1);
+        Long savePostId1 = boardService.createPost(targetPost);
+        for (long i = 0; i < 42; i++) {
+            boardService.likePost(i, savePostId1);
+        }
+
+        List<Long> postLikeMembers = boardService.getPostLikeMembers(savePostId1);
+        assertThat(postLikeMembers).hasSize(42);
+    }
+
     @Test
     void 게시물_숨김() {
         List<String> tag1 = createTags();
