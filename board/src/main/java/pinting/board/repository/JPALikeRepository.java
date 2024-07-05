@@ -73,4 +73,13 @@ public class JPALikeRepository implements LikeRepository{
                 .selectFrom(like)
                 .fetch();
     }
+
+    @Override
+    public Optional<Like> findOneByMemberIdAndPostId(Long memberId, Long postId) {
+        return Optional.ofNullable(queryFactory
+                .selectFrom(like)
+                .join(like.post, post)
+                .where(like.post.id.eq(postId), like.memberId.eq(memberId))
+                .fetchOne());
+    }
 }
