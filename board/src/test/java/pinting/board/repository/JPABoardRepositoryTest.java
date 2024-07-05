@@ -59,7 +59,8 @@ public class JPABoardRepositoryTest {
     }
 
     public PostForm createForm(Long id) {
-        return new PostForm(id, "title " + id, "img " + id, "content " + id, "PUBLIC", null);
+        List<String> tags = new ArrayList<>();
+        return new PostForm(id, "title " + id, "img " + id, "content " + id, tags);
     }
 
     public Post createPost(Long authorId, String title, String content) {

@@ -2,7 +2,6 @@ package pinting.board.repository;
 
 
 import jakarta.persistence.EntityManager;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 import pinting.board.controller.form.PostForm;
 import pinting.board.domain.Like;
 import pinting.board.domain.Post;
-import pinting.board.domain.Tag;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +32,7 @@ public class JPALikeRepositoryTest {
         String content = "content " + authorId;
         String status = "PUBLIC";
         List<String> tags = new ArrayList<>();
-        return new Post(new PostForm(authorId, title, image, content, status, tags));
+        return new Post(new PostForm(authorId, title, image, content, tags));
     }
 
     private Like createLikeWithPost(Long memberId, Long authorId) {
