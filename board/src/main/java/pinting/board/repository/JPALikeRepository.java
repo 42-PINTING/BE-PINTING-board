@@ -5,6 +5,7 @@ import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import pinting.board.domain.Like;
 import pinting.board.domain.Post;
 import pinting.board.domain.QLike;
@@ -18,6 +19,7 @@ import static pinting.board.domain.QPost.post;
 
 @Repository
 @RequiredArgsConstructor
+@Transactional
 public class JPALikeRepository implements LikeRepository{
 
     private final EntityManager em;
@@ -37,6 +39,7 @@ public class JPALikeRepository implements LikeRepository{
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<Like> findOneById(Long id) {
         return Optional.ofNullable(queryFactory
                 .selectFrom(like)
@@ -45,6 +48,7 @@ public class JPALikeRepository implements LikeRepository{
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Like> findAllByPostId(Long postId) {
         return queryFactory
                 .selectFrom(like)
@@ -54,6 +58,7 @@ public class JPALikeRepository implements LikeRepository{
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Like> findAllByMemberId(Long memberId) {
         return queryFactory
                 .selectFrom(like)
@@ -62,6 +67,7 @@ public class JPALikeRepository implements LikeRepository{
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Like> findAll() {
         return queryFactory
                 .selectFrom(like)
