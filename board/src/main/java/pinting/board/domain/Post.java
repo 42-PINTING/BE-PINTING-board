@@ -3,7 +3,6 @@ package pinting.board.domain;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -37,9 +36,6 @@ public class Post {
     @OneToMany(mappedBy = "post")
     private List<Like> likes = new ArrayList<>();
 
-    @Enumerated(EnumType.STRING)
-    private PostStatus status; // [PUBLIC, PRIVATE]
-
     @CreatedDate
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH:mm:ss")
     private LocalDateTime createdDate;
@@ -53,23 +49,17 @@ public class Post {
         this.title = form.getTitle();
         this.img = form.getImg();
         this.content = form.getContent();
-        if (form.getStatus().equals("public")) {
-            this.status = PostStatus.PUBLIC;
-        } else {
-            this.status = PostStatus.PRIVATE;
-        }
         for (String tagName : form.getTags()) {
             new Tag(tagName, this);
         }
     }
 
-    public Post(Long authorId, String title, String img, String content, List<Tag> tags, PostStatus status) {
+    public Post(Long authorId, String title, String img, String content, List<Tag> tags) {
         this.authorId = authorId;
         this.title = title;
         this.img = img;
         this.content = content;
         this.tags = tags;
-        this.status = status;
     }
 
     @Override
@@ -102,7 +92,6 @@ public class Post {
     public void hiddenPost() {
         this.updatedDate = LocalDateTime.now();
         this.hiddenTime = LocalDateTime.now();
-        this.status = PostStatus.PRIVATE;
     }
 
     /**
@@ -111,6 +100,5 @@ public class Post {
     public void publishPost() {
         this.updatedDate = LocalDateTime.now();
         this.hiddenTime = null;
-        this.status = PostStatus.PUBLIC;
     }
 }

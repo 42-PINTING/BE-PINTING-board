@@ -6,7 +6,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import pinting.board.controller.form.PostForm;
 import pinting.board.domain.Post;
-import pinting.board.domain.PostStatus;
 import pinting.board.service.BoardService;
 
 import java.util.List;
