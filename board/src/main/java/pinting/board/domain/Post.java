@@ -29,11 +29,13 @@ public class Post {
     private String title;
     private String img;
     private String content;
-    private Long likeCount;
     private LocalDateTime hiddenTime;
 
     @OneToMany(mappedBy = "post")
     private List<Tag> tags = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post")
+    private List<Like> likes = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private PostStatus status; // [PUBLIC, PRIVATE]
@@ -56,7 +58,6 @@ public class Post {
         } else {
             this.status = PostStatus.PRIVATE;
         }
-        this.likeCount = 0L;
         for (String tagName : form.getTags()) {
             new Tag(tagName, this);
         }
@@ -77,8 +78,7 @@ public class Post {
                 ", authorId: " + authorId +
                 ", title: " + title +
                 ", img: " + img +
-                ", content: " + content +
-                ", likeCount: " + likeCount + "]";
+                ", content: " + content + "]";
     }
 
     public void update(PostUpdateDto postUpdateDto) {
@@ -89,20 +89,12 @@ public class Post {
     }
 
     /**
-     * like 증가
+     * like 추가
      */
-    public Long increaseLikeCount() {
-        this.likeCount++;
-        return this.likeCount;
-    }
 
     /**
-     * like 감소
+     * like 취소
      */
-    public Long decreaseLikeCount() {
-        this.likeCount--;
-        return this.likeCount;
-    }
 
     /**
      * post 가리기
