@@ -169,4 +169,23 @@ public class JPALikeRepositoryTest {
         List<Like> findLikes = likeRepository.findAllByMemberId(memberId);
         assertThat(findLikes.size()).isEqualTo(21);
     }
+
+    @Test
+    void 멤버와_게시물ID로_검색() {
+        Post targetPost = createPostWithAuthorId(42L);
+        em.persist(targetPost);
+
+        likeRepository.save(new Like(targetPost, 1L));
+        /**
+         * TODO: 다수의 중복된 Like는 서비스 단에서 막아주어야 하는가?
+         */
+//        for (long i = 0; i < 42; i++) {
+//            likeRepository.save(new Like(targetPost, 1L));
+//        }
+
+        Optional<Like> findLike = likeRepository.findOneByMemberIdAndPostId(1L, targetPost.getId());
+        assertThat(findLike.isPresent()).isTrue();
+        assertThat(findLike.get().getMemberId()).isEqualTo(1L);
+
+    }
 }
