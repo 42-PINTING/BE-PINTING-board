@@ -428,6 +428,29 @@ public class BoardServiceTest {
 
     @Test
     void 랜덤_게시물() {
-        
+        List<Post> mainPagePost = boardService.getMainPagePost();
+
+        assertThat(mainPagePost.size()).isEqualTo(0);
+
+        for (long i = 0; i < 4; i++) {
+            List<String> tag1 = createTags();
+            boardService.createPost(createSamplePost(i, tag1));
+        }
+        mainPagePost = boardService.getMainPagePost();
+        assertThat(mainPagePost.size()).isEqualTo(4);
+
+        for (long i = 0; i < 2; i++) {
+            List<String> tag1 = createTags();
+            boardService.createPost(createSamplePost(i, tag1));
+        }
+        mainPagePost = boardService.getMainPagePost();
+        assertThat(mainPagePost.size()).isEqualTo(6);
+
+        for (long i = 0; i < 10; i++) {
+            List<String> tag1 = createTags();
+            boardService.createPost(createSamplePost(i, tag1));
+        }
+        mainPagePost = boardService.getMainPagePost();
+        assertThat(mainPagePost.size()).isEqualTo(9);
     }
 }
