@@ -6,7 +6,9 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "likes")
+@Table(name = "likes", uniqueConstraints =
+    @UniqueConstraint(name = "UniqueMemberAndPost", columnNames = {"post_id", "memberId"})
+)
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class Like {
 
@@ -23,7 +25,8 @@ public class Like {
 
     @Override
     public String toString() {
-        return "Like [id=" + id + "]";
+        return "Like [id=" + id +
+                ", memberId=" + memberId + "]";
     }
 
     public Like(Post post, Long memberId) {
