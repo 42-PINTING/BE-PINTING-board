@@ -82,6 +82,7 @@ public class JPABoardRepository implements BoardRepository {
     public List<Post> getRandomPosts(int count) {
         return queryFactory
                 .selectFrom(post)
+                .where(post.hiddenTime.isNotNull())
                 .orderBy(NumberExpression.random().asc())
                 .limit(count)
                 .fetch();
