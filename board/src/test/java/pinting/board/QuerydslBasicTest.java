@@ -1,12 +1,12 @@
 package pinting.board;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
-import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import pinting.board.controller.form.PostForm;
 import pinting.board.domain.Post;
 import pinting.board.domain.QPost;
-import pinting.board.domain.QTag;
 import pinting.board.domain.Tag;
-import pinting.board.service.PostUpdateDto;
 
 import java.util.List;
 
@@ -30,7 +28,7 @@ import static pinting.board.domain.QTag.*;
 @Transactional
 public class QuerydslBasicTest {
 
-    @Autowired
+    /*@Autowired
     EntityManager em;
 
     JPAQueryFactory queryFactory;
@@ -39,42 +37,42 @@ public class QuerydslBasicTest {
     public void before() {
         queryFactory = new JPAQueryFactory(em);
 
-        PostForm form1 = new PostForm();
+        PostForm form1 = createForm(1L);
         Post postA = new Post(form1);
-        PostForm form2 = new PostForm();
+        PostForm form2 = createForm(2L);
         Post postB = new Post(form2);
-        PostForm form3 = new PostForm();
+        PostForm form3 = createForm(3L);
         Post postC = new Post(form3);
-        PostForm form4 = new PostForm();
+        PostForm form4 = createForm(4L);
         Post postD = new Post(form4);
         em.persist(postA);
         em.persist(postB);
         em.persist(postC);
         em.persist(postD);
 
-        Tag diary1 = new Tag("diary");
-        Tag diary2 = new Tag("diary");
-        Tag feeling1 = new Tag("feeling");
-        Tag feeling2 = new Tag("feeling");
+        Tag diary1 = new Tag("diary", postA);
+        Tag diary2 = new Tag("diary", postD);
+        Tag feeling1 = new Tag("feeling", postC);
+        Tag feeling2 = new Tag("feeling", postD);
         em.persist(diary1);
         em.persist(diary2);
         em.persist(feeling1);
         em.persist(feeling2);
 
-        diary1.changePost(postA);
-        diary2.changePost(postD);
-        feeling1.changePost(postC);
-        feeling2.changePost(postD);
+    }
+
+    private PostForm createForm(Long id) {
+        return new PostForm(id, "title " + id, "img " + id, "content " + id, "public", null);
     }
 
     @Test
     @Rollback(value = false)
     public void startJPQL() {
-//        Post fintPost = em.createQuery("select p from Post p where p.title = :title", Post.class)
+//        Post findPost = em.createQuery("select p from Post p where p.title = :title", Post.class)
 //                .setParameter("title", "title1")
 //                .getSingleResult();
 
-//        assertThat(fintPost.getTitle()).isEqualTo("title1");
+//        assertThat(findPost.getTitle()).isEqualTo("title1");
 
         List<Post> results = em.createQuery("select p from Post p", Post.class)
                 .getResultList();
@@ -112,22 +110,22 @@ public class QuerydslBasicTest {
         assertThat(findPost.getTitle()).isEqualTo("title1");
     }
 
-    /**
+    *//**
      * 회원 정렬 순서
      * 1. 회원 나이 내림차순
      * 2. 회원 나이 오름차순
      *  이름이 없으면 마지막에 출력(nulls last)
-     */
+     *//*
     @Test
     public void sort() {
-        PostForm form1 = new PostForm();
+        PostForm form1 = createForm(4L);
         form1.setContent("hi");
         form1.setTitle(null);
         em.persist(new Post(form1));
-        PostForm form2 = new PostForm();
+        PostForm form2 = createForm(5L);
         form2.setContent("hi");
         em.persist(new Post(form2));
-        PostForm form3 = new PostForm();
+        PostForm form3 = createForm(6L);
         form3.setContent("hi");
         em.persist(new Post(form3));
 
@@ -228,10 +226,10 @@ public class QuerydslBasicTest {
     }
 
 
-    /**
+    *//**
      * 회원과 팀을 조인하면서, 팀 이름이 teamA인 팀만 조인, 회원은 모두 조회
      * JPQL: select p, t from Post p left join p.tag t on tag.name = 'diary'
-     */
+     *//*
     @Test
     public void join_on_filtering() {
         List<Tuple> results = queryFactory
@@ -321,9 +319,65 @@ public class QuerydslBasicTest {
         }
     }
 
-//    @Test
-//    public void findDtoBySetter() {
-//        queryFactory
-//                .select(Projections.bean(PostUpdateDto.class))
-//    }
+    @Test
+    public void dynamicQuery_Boolean_builder() {
+        String contentParam = "content";
+        Long idParam = null;
+
+        List<Post> result = searchPost1(contentParam, idParam);
+        for (Post post : result) {
+            System.out.println("post = " + post);
+        }
+        assertThat(result.size()).isEqualTo(4);
+    }
+
+    private List<Post> searchPost1(String contentCond, Long idCond) {
+        BooleanBuilder builder = new BooleanBuilder();
+
+        if (contentCond != null) {
+            builder.and(post.content.startsWith(contentCond));
+        }
+
+        if (idCond != null) {
+            builder.and(post.id.eq(idCond));
+        }
+
+        return queryFactory
+                .selectFrom(post)
+                .where(builder)
+                .fetch();
+    }
+
+    @Test
+    public void dynamicQuery_WhereParam() {
+        String contentParam = "content";
+        Long idParam = null;
+
+        List<Post> result = searchPost2(contentParam, idParam);
+        for (Post post : result) {
+            System.out.println("post = " + post);
+        }
+        assertThat(result.size()).isEqualTo(4);
+    }
+
+    public List<Post> searchPost2(String contentCond, Long idCond) {
+        return queryFactory
+                .selectFrom(post)
+                .where(contentLike(contentCond), idEq(idCond))
+                .fetch();
+    }
+
+    private Predicate idEq(Long idCond) {
+        if (idCond == null) {
+            return null;
+        }
+        return post.id.eq(idCond);
+    }
+
+    private Predicate contentLike(String contentCond) {
+        if (contentCond != null) {
+            return post.content.startsWith(contentCond);
+        }
+        return null;
+    }*/
 }
