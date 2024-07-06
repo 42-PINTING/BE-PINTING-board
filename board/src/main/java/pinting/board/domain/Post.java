@@ -29,7 +29,7 @@ public class Post {
     private String img;
     private String content;
     private Long viewCount;
-    private LocalDateTime hiddenTime;
+    private LocalDateTime hiddenTime = null;
 
     @OneToMany(mappedBy = "post")
     private List<Tag> tags = new ArrayList<>();
@@ -51,7 +51,14 @@ public class Post {
         this.img = form.getImg();
         this.content = form.getContent();
         this.viewCount = 0L;
-        this.hiddenTime = LocalDateTime.now();
+        // TODO: 문자열이 아닌 다른 방법으로 검증할 수 있는 방법이 있을까?
+        //   - PostForm의 생성자에서만 해당 문자열을 검증한다.
+        if (form.getStatus().equals("public")) {
+            this.hiddenTime = null;
+        }
+        else {
+            this.hiddenTime = LocalDateTime.now();
+        }
         for (String tagName : form.getTags()) {
             new Tag(tagName, this);
         }

@@ -17,6 +17,7 @@ public class PostReturnDto {
     private final int likeCount;
     private final Long viewCount;
     private final List<String> tags;
+    private final LocalDateTime hiddenTime;
     private final LocalDateTime createdDate;
     private final LocalDateTime updatedDate;
 
@@ -28,7 +29,16 @@ public class PostReturnDto {
         this.likeCount = post.getLikeCount();
         this.viewCount = post.getViewCount();
         this.tags = post.getTagNames();
+        this.hiddenTime = post.getHiddenTime();
         this.createdDate = post.getCreatedDate();
         this.updatedDate = post.getUpdatedDate();
+    }
+
+    @Override
+    public String toString() {
+        return "[id=" + id + ", title=" + title + ", content=" + content + ", img=" + img
+                + ", likeCount=" + likeCount + ", viewCount=" + viewCount + ", tags=" + tags
+                + ", hiddenTime=" + hiddenTime + ", createdDate=" + createdDate + ", updatedDate="
+                + updatedDate + "]";
     }
 }
