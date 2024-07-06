@@ -6,6 +6,8 @@ import org.springframework.transaction.annotation.Transactional;
 import pinting.board.domain.Like;
 import pinting.board.domain.Post;
 import pinting.board.domain.Tag;
+import pinting.board.dto.PostReturnDto;
+import pinting.board.dto.PostUpdateDto;
 import pinting.board.repository.BoardRepository;
 import pinting.board.repository.LikeRepository;
 import pinting.board.repository.TagRepository;
@@ -69,9 +71,10 @@ public class BoardService {
    }
 
    @Transactional(readOnly = true)
-   public List<Post> getMainPagePost() {
-       int MAIN_PAGE_POST_COUNT = 9;
-       return boardRepository.getRandomPosts(MAIN_PAGE_POST_COUNT);
+   public List<PostReturnDto> getMainPagePost() {
+      int MAIN_PAGE_POST_COUNT = 9;
+      List<Post> randomPosts = boardRepository.getRandomPosts(MAIN_PAGE_POST_COUNT);
+      return randomPosts.stream().map(PostReturnDto::new).toList();
    }
 
    @Transactional(readOnly = true)

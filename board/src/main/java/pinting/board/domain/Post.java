@@ -7,7 +7,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.format.annotation.DateTimeFormat;
 import pinting.board.controller.form.PostForm;
-import pinting.board.service.PostUpdateDto;
+import pinting.board.dto.PostUpdateDto;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -28,6 +28,7 @@ public class Post {
     private String title;
     private String img;
     private String content;
+    private Long viewCount;
     private LocalDateTime hiddenTime;
 
     @OneToMany(mappedBy = "post")
@@ -49,6 +50,8 @@ public class Post {
         this.title = form.getTitle();
         this.img = form.getImg();
         this.content = form.getContent();
+        this.viewCount = 0L;
+        this.hiddenTime = LocalDateTime.now();
         for (String tagName : form.getTags()) {
             new Tag(tagName, this);
         }
@@ -79,12 +82,18 @@ public class Post {
     }
 
     /**
-     * like 추가
+     * like 개수 반환
      */
+    public int getLikeCount() {
+        return this.likes.size();
+    }
 
     /**
-     * like 취소
+     * 태그 이름만 반환
      */
+    public List<String> getTagNames() {
+        return this.tags.stream().map(Tag::getName).toList();
+    }
 
     /**
      * post 가리기

@@ -1,4 +1,4 @@
-package pinting.board.service;
+package pinting.board.dto;
 
 import lombok.Getter;
 

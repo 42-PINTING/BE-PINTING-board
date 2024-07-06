@@ -5,10 +5,11 @@ import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Description;
 import org.springframework.transaction.annotation.Transactional;
 import pinting.board.controller.form.PostForm;
 import pinting.board.domain.Post;
+import pinting.board.dto.PostReturnDto;
+import pinting.board.dto.PostUpdateDto;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,7 +37,6 @@ public class BoardServiceTest {
         String title = "title " + authorId;
         String image = "image " + authorId;
         String content = "content " + authorId;
-        String status = "PUBLIC";
         return new Post(new PostForm(authorId, title, image, content, tags));
     }
 
@@ -428,7 +428,7 @@ public class BoardServiceTest {
 
     @Test
     void 랜덤_게시물() {
-        List<Post> mainPagePost = boardService.getMainPagePost();
+        List<PostReturnDto> mainPagePost = boardService.getMainPagePost();
 
         assertThat(mainPagePost.size()).isEqualTo(0);
 
