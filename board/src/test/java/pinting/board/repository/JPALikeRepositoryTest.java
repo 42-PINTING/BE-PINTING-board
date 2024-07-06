@@ -30,9 +30,9 @@ public class JPALikeRepositoryTest {
         String title = "title " + authorId;
         String image = "image " + authorId;
         String content = "content " + authorId;
-        String status = "PUBLIC";
+        String status = "public";
         List<String> tags = new ArrayList<>();
-        return new Post(new PostForm(authorId, title, image, content, tags));
+        return new Post(new PostForm(authorId, title, image, content, status, tags));
     }
 
     private Like createLikeWithPost(Long memberId, Long authorId) {

@@ -60,7 +60,7 @@ public class JPABoardRepositoryTest {
 
     public PostForm createForm(Long id) {
         List<String> tags = new ArrayList<>();
-        return new PostForm(id, "title " + id, "img " + id, "content " + id, tags);
+        return new PostForm(id, "title " + id, "img " + id, "content " + id, "public", tags);
     }
 
     public Post createPost(Long authorId, String title, String content) {
@@ -174,5 +174,8 @@ public class JPABoardRepositoryTest {
             System.out.println("result = " + result);
         }
         assertThat(results.size()).isEqualTo(9);
+        assertThat(results).allSatisfy((post) -> {
+            assertThat(post.getHiddenTime()).isNull();
+        });
     }
 }

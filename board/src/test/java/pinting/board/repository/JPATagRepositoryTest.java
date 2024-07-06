@@ -63,7 +63,7 @@ class JPATagRepositoryTest {
 
     public PostForm createForm(Long id) {
         List<String> tags = new ArrayList<>();
-        return new PostForm(id, "title " + id, "img " + id, "content " + id, tags);
+        return new PostForm(id, "title " + id, "img " + id, "content " + id, "public", tags);
     }
 
     @Test
@@ -108,7 +108,16 @@ class JPATagRepositoryTest {
 
     @Test
     public void 게시물_아이디_검색() {
-        List<Tag> results = tagRepository.findAllByPostId(4L);
+        PostForm form5 = createForm(5L);
+        Post postE = new Post(form5);
+        em.persist(postE);
+
+        Long postId = postE.getId();
+
+        tagRepository.save(new Tag("diary", postE));
+        tagRepository.save(new Tag("babe", postE));
+
+        List<Tag> results = tagRepository.findAllByPostId(postId);
 
         for (Tag tag : results) {
             System.out.println("tag = " + tag);

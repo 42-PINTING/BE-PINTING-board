@@ -37,7 +37,8 @@ public class BoardServiceTest {
         String title = "title " + authorId;
         String image = "image " + authorId;
         String content = "content " + authorId;
-        return new Post(new PostForm(authorId, title, image, content, tags));
+        String status = "public";
+        return new Post(new PostForm(authorId, title, image, content, status, tags));
     }
 
     private List<String> createTags(String ... strings) {
@@ -404,6 +405,7 @@ public class BoardServiceTest {
         em.clear();
 
         Optional<Post> findPost = boardService.readOnePostById(saveId1);
+        assertThat(findPost.isPresent()).isTrue();
         assertThat(findPost.get().getHiddenTime()).isNotNull();
     }
 
@@ -415,6 +417,7 @@ public class BoardServiceTest {
         boardService.hiddenPost(saveId1);
 
         Optional<Post> findPost = boardService.readOnePostById(saveId1);
+        assertThat(findPost.isPresent()).isTrue();
         assertThat(findPost.get().getHiddenTime()).isNotNull();
 
         boardService.publishPost(saveId1);
@@ -423,6 +426,7 @@ public class BoardServiceTest {
         em.clear();
 
         findPost = boardService.readOnePostById(saveId1);
+        assertThat(findPost.isPresent()).isTrue();
         assertThat(findPost.get().getHiddenTime()).isNull();
     }
 
@@ -438,19 +442,32 @@ public class BoardServiceTest {
         }
         mainPagePost = boardService.getMainPagePost();
         assertThat(mainPagePost.size()).isEqualTo(4);
+        assertThat(mainPagePost).allSatisfy(post -> {
+            assertThat(post.getHiddenTime()).isNull();
+        });
 
         for (long i = 0; i < 2; i++) {
             List<String> tag1 = createTags();
-            boardService.createPost(createSamplePost(i, tag1));
+            Long postId = boardService.createPost(createSamplePost(i, tag1));
+            boardService.hiddenPost(postId);
         }
         mainPagePost = boardService.getMainPagePost();
-        assertThat(mainPagePost.size()).isEqualTo(6);
-
+        for (PostReturnDto post : mainPagePost) {
+            System.out.println("post = " + post);
+        }
+        assertThat(mainPagePost.size()).isEqualTo(4);
+        assertThat(mainPagePost).allSatisfy(post -> {
+            assertThat(post.getHiddenTime()).isNull();
+        });
+        
         for (long i = 0; i < 10; i++) {
             List<String> tag1 = createTags();
             boardService.createPost(createSamplePost(i, tag1));
         }
         mainPagePost = boardService.getMainPagePost();
         assertThat(mainPagePost.size()).isEqualTo(9);
+        assertThat(mainPagePost).allSatisfy(post -> {
+            assertThat(post.getHiddenTime()).isNull();
+        });
     }
 }
