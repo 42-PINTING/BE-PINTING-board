@@ -20,6 +20,10 @@ spring:
         format_sql: true
 
 management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
   health:
     readinessstate:
       enabled: true
